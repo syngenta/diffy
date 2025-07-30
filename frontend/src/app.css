@@ -1,0 +1,25 @@
+.MuiDialog-paper {
+  max-width: 96%;
+}
+.MuiGrid-item:nth-child(2) {
+  flex-basis: 20%;
+  max-width: 20%;
+}
+.MuiGrid-item:nth-child(3) {
+  flex-basis: 20%;
+  max-width: 20%;
+}
+.MuiGrid-item:nth-child(4) {
+  flex-basis: 60%;
+  max-width: 60%;
+}
+td.MuiTableCell-root {
+  vertical-align: top;
+}
+body {
+  word-break: break-all !important;
+}
+pre {
+  overflow: visible !important;
+  max-width: 600px;
+}
