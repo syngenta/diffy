@@ -54,6 +54,18 @@ public class IntegrationTest {
     }
 
     @Test
+    public void masterCustomHeaderIsForwardedToUpstream() {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        ResponseEntity<String> response = restTemplate.postForEntity(
+                proxyUrl, new HttpEntity<>("{}", headers), String.class);
+
+        assertEquals("integration", response.getHeaders().getFirst("X-Diffy-Test"),
+                "Custom master header 'X-Diffy-Test' should be forwarded to primary and echoed back");
+    }
+
+    @Test
     public void warmup() throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);

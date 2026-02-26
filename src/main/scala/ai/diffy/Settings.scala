@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
 import java.net.URL
+import java.util.{Collections, HashMap, Map => JMap}
 
 @Component
 class Settings(
@@ -25,7 +26,8 @@ class Settings(
                 @Value("${maxHeaderSize:8192}") val maxHeaderSize: Int = 8192,
                 @Value("${resource.mapping:}") resourceMappings: String = "",
                 @Value("${responseMode:primary}") mode: String = ResponseMode.primary.name(),
-                @Value("${dockerComposeLocal:false}") val dockerComposeLocal: Boolean = false)
+                @Value("${dockerComposeLocal:false}") val dockerComposeLocal: Boolean = false,
+                @Value("${master.headers:}") masterHeadersStr: String = "")
 {
   private[this] val log = LoggerFactory.getLogger(classOf[Settings])
   val candidate = Downstream(candidateAddress)
@@ -44,6 +46,28 @@ class Settings(
     .map(new ResourceMatcher(_))
 
   val responseMode = ResponseMode.valueOf(mode);
+
+  val masterHeaders: JMap[String, String] = {
+    val map = new HashMap[String, String]()
+    if (masterHeadersStr != null && masterHeadersStr.nonEmpty) {
+      masterHeadersStr.split(",").foreach { entry =>
+        val i = entry.indexOf(':')
+        if (i > 0) {
+          val name  = entry.substring(0, i).trim
+          val value = entry.substring(i + 1).trim
+          if (name.isEmpty) {
+            log.warn(s"Malformed master header entry (empty name): '$entry'. Expected format: 'Header-Name:value'")
+          } else {
+            log.debug(s"Registering master header: '$name'")
+            map.put(name, value)
+          }
+        } else {
+          log.warn(s"Malformed master header entry (missing ':'): '$entry'. Expected format: 'Header-Name:value'")
+        }
+      }
+    }
+    Collections.unmodifiableMap(map)
+  }
 }
 
 object Downstream {
