@@ -10,6 +10,7 @@ candidate: "localhost:9000"
 master:
   primary: "localhost:9100"
   secondary: "localhost:9200"
+  headers: "X-Diffy-Test:integration"
 
 service:
   protocol : "http"

@@ -15,6 +15,8 @@ import reactor.netty.ByteBufMono;
 import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.server.HttpServerRequest;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
@@ -42,9 +44,16 @@ public class HttpEndpoint extends IndependentEndpoint<HttpRequest, HttpResponse>
     public static final Endpoint<HttpServerRequest, CompletableFuture<HttpRequest>> RequestBuffer =
             Async.contain(Endpoint.from("RequestBuffer", () -> requestBuffer));
     public HttpEndpoint(String name, HttpClient client) {
+        this(name, client, Collections.emptyMap());
+    }
+
+    public HttpEndpoint(String name, HttpClient client, Map<String, String> extraHeaders) {
         super(name, () -> (HttpRequest req) ->
             client
-                .headers(headers -> headers.add(HttpMessage.toHttpHeaders(req.getHeaders())))
+                .headers(headers -> {
+                    headers.add(HttpMessage.toHttpHeaders(req.getHeaders()));
+                    extraHeaders.forEach(headers::add);
+                })
                 .request(HttpMethod.valueOf(req.getMethod()))
                 .uri(req.getUri())
                 .send(ByteBufMono.fromString(Mono.justOrEmpty(req.getBody())))
@@ -58,28 +67,32 @@ public class HttpEndpoint extends IndependentEndpoint<HttpRequest, HttpResponse>
     public Endpoint<HttpServerRequest, CompletableFuture<HttpResponse>> withSeverRequestBuffer(){
         return Endpoint.from(this.getName(), () -> (serverRequest -> requestBuffer.apply(serverRequest).thenApply(this::apply)));
     }
-    private static HttpEndpoint from(String name, String host, int port, int maxHeader) {
+    private static HttpEndpoint from(String name, String host, int port, int maxHeader, Map<String, String> extraHeaders) {
         final HttpClient client = HttpClient
                 .create().host(host).port(port)
                 .httpResponseDecoder(httpResponseDecoderSpec ->
                         httpResponseDecoderSpec
                                 .maxHeaderSize(maxHeader));
-        return new HttpEndpoint(name, client);
+        return new HttpEndpoint(name, client, extraHeaders);
     }
-    private static HttpEndpoint from(String name, String baseUrl, int maxHeader) {
-        final HttpClient client = HttpClient
+    private static HttpEndpoint from(String name, String baseUrl, int maxHeader, Map<String, String> extraHeaders) {
+        HttpClient client = HttpClient
                 .create().baseUrl(baseUrl)
                 .httpResponseDecoder(httpResponseDecoderSpec ->
                         httpResponseDecoderSpec
                                 .maxHeaderSize(maxHeader));
-        return new HttpEndpoint(name, client);
+        return new HttpEndpoint(name, client, extraHeaders);
     }
 
     public static HttpEndpoint from(String name, Downstream downstream, int maxHeader) {
+        return from(name, downstream, maxHeader, Collections.emptyMap());
+    }
+
+    public static HttpEndpoint from(String name, Downstream downstream, int maxHeader, Map<String, String> extraHeaders) {
         if(downstream instanceof BaseUrl){
-            return from(name, ((BaseUrl) downstream).baseUrl(), maxHeader);
+            return from(name, ((BaseUrl) downstream).baseUrl(), maxHeader, extraHeaders);
         }
         HostPort hostport = (HostPort)downstream;
-        return from(name, hostport.host(), hostport.port(), maxHeader);
+        return from(name, hostport.host(), hostport.port(), maxHeader, extraHeaders);
     }
 }
