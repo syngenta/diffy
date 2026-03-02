@@ -16,6 +16,7 @@ import reactor.netty.http.client.HttpClient;
 import reactor.netty.http.server.HttpServerRequest;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -51,8 +52,9 @@ public class HttpEndpoint extends IndependentEndpoint<HttpRequest, HttpResponse>
         super(name, () -> (HttpRequest req) ->
             client
                 .headers(headers -> {
-                    headers.add(HttpMessage.toHttpHeaders(req.getHeaders()));
-                    extraHeaders.forEach(headers::add);
+                    HashMap<String, String> mapHeaders = new HashMap<>(req.getHeaders());
+                    mapHeaders.putAll(extraHeaders);
+                    headers.add(HttpMessage.toHttpHeaders(mapHeaders));
                 })
                 .request(HttpMethod.valueOf(req.getMethod()))
                 .uri(req.getUri())
