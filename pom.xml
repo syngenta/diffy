@@ -256,6 +256,9 @@
                             <goal>yarn</goal>
                         </goals>
                         <phase>generate-resources</phase>
+                        <configuration>
+                            <arguments>--frozen-lockfile</arguments>
+                        </configuration>
                     </execution>
                     <execution>
                         <id>yarn build</id>

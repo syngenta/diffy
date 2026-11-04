@@ -12,8 +12,8 @@ RUN mvn com.github.eirslett:frontend-maven-plugin:install-node-and-yarn -DnodeVe
 
 # install dependencies in frontend/package.json
 RUN mkdir -p $HOME/frontend
-ADD frontend/package.json $HOME/frontend
-RUN mvn com.github.eirslett:frontend-maven-plugin:yarn -f maven_docker_cache.xml
+ADD frontend/package.json frontend/yarn.lock $HOME/frontend/
+RUN mvn com.github.eirslett:frontend-maven-plugin:yarn -Dfrontend.yarn.arguments=--frozen-lockfile -f maven_docker_cache.xml
 
 # install dependencies in pom.xml
 ADD pom.xml $HOME
