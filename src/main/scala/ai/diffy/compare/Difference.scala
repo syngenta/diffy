@@ -137,6 +137,7 @@ object Difference {
     (lift(left), lift(right)) match {
       case (l, r) if isPrimitive(l) && l == r => NoDifference(l)
       case (l, r) if isPrimitive(l) && l.getClass == r.getClass => PrimitiveDifference(l, r)
+      case (ls: Seq[_], rs: Seq[_]) if ls == rs => NoDifference(ls)
       case (ls: Seq[_], rs: Seq[_]) => diffSeq(ls, rs)
       case (ls: Set[A], rs: Set[A]) => diffSet(ls, rs)
       case (lm: FieldMap, rm: FieldMap) => diffObjectMap(lm, rm)
