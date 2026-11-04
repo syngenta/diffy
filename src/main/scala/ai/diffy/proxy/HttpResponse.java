@@ -14,6 +14,9 @@ public class HttpResponse extends HttpMessage {
     }
 
     public String getStatus() {
+        if (status.contains(" ")) {
+            return status.trim().split("\\s+")[0];
+        }
         return status;
     }
 

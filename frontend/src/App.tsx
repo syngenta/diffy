@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, Grid } from '@mui/material';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import './app.css';
 
 import { useAppDispatch, useAppSelector } from './app/hooks'
 import InfoView from './features/info/InfoView';

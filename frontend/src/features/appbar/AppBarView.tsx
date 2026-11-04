@@ -19,17 +19,18 @@ export default function AppBarView(){
   const info = fetchinfo();
   const excludeNoise = useAppSelector((state) => state.selections.noiseCancellationIsOn);
   const {start, end} = useAppSelector((state) => state.selections.dateTimeRange);
+  const tenMinutesInMillisseconds = 10 * 60 * 1000;
   const dispatch = useAppDispatch();
   return <AppBar position='static'>
     <Toolbar>
       <Typography variant="h6" color="inherit" sx={{ flexGrow: 1 }}>{info.name}</Typography>
           <DateTimeRangePicker 
             onChange={(range) => {
-              const [s, e] = (Array.isArray(range) && range[0] && range[1]) ? [range[0], range[1]] : [new Date(Date.now() - 24*3600*1000), new Date()];
+              const [s, e] = (Array.isArray(range) && range[0] && range[1]) ? [range[0], range[1]] : [new Date(Date.now() - tenMinutesInMillisseconds), new Date()];
               dispatch(setDateTimeRange({start: s.getTime(), end: e.getTime()}));
             }}
             value={[new Date(start), new Date(end)]}
-            disableClock={true}
+            disableClock={false}
           />
       <Tooltip title={excludeNoise?"Show Noise":"Hide Noise"}>
         <IconButton color="inherit" aria-label="logs">
